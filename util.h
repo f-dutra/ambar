@@ -13,4 +13,6 @@
 void die(const char *fmt, ...);
 void *ecalloc(size_t nmemb, size_t size);
 void utf8truncate(char *s);
+int parsedouble(const char *s, double *out);
+int parseint(const char *s, int *out);
 

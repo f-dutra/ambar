@@ -7,12 +7,12 @@ PANGOLIBS := $(shell pkg-config --libs pango pangocairo)
 INCS = -I$(X11INC) -I${CAIROINC} ${PANGOINCS}
 
 CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE=700L -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
-CFLAGS  = -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os ${INCS} ${CPPFLAGS}
+CFLAGS  = -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Wno-c2y-extensions -Os ${INCS} ${CPPFLAGS}
 LDFLAGS = -L$(X11LIB) -lX11 -lXrender -lcairo -lm -lXrandr ${PANGOLIBS}
 
 CC      = cc
 
-SRC = ambar.c drw.c util.c
+SRC = ambar.c config.c drw.c util.c
 OBJ = ${SRC:.c=.o}
 
 .c.o:

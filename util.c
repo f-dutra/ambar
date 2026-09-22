@@ -66,3 +66,34 @@ utf8truncate(char *s)
 		s[i] = '\0';
 }
 
+int
+parseint(const char *s, int *out)
+{
+	char *end;
+	long v;
+
+	if (!s || !*s)
+		return -1;
+	errno = 0;
+	v = strtol(s, &end, 10);
+	if (*end != '\0' || errno == ERANGE)
+		return -1;
+	*out = (int)v;
+	return 1;
+}
+
+int
+parsedouble(const char *s, double *out)
+{
+	char *end;
+	double v;
+
+	if (!s || !*s)
+		return -1;
+	v = strtod(s, &end);
+	if (*end != '\0' || end == s)
+		return -1;
+	*out = v;
+	return 1;
+}
+

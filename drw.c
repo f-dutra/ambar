@@ -21,9 +21,17 @@ drw_button(Drw *drw, char *text, int x, int y, int w, int h, int r, int linew)
 	drw_rect(drw, x, y, w, h, r, 1, 0);
 	if (linew)
 		drw_rect(drw, x, y, w, h, r, 0, linew);
-	drw_text(drw, text, tx, ty);
+	drw_text(drw, text, tx, ty, 0);
 
 	return;
+}
+
+void
+drw_clip(Drw *drw, int x, int y, int w, int h)
+{
+	cairo_save(drw->cr);
+	cairo_rectangle(drw->cr, x, y, w, h);
+	cairo_clip(drw->cr);
 }
 
 void
@@ -221,19 +229,19 @@ drw_rect(Drw *drw, int x, int y, int w, int h, int r, int fill, int linew)
 
 	drw_set_color(drw, drw->scm[fill ? ColBg : ColBorder]);
 
-	/* clamp radius so it never exceeds half the smaller dimension */
 	if (r > w / 2) r = w / 2;
 	if (r > h / 2) r = h / 2;
 
 	if (r <= 0) {
-		/* fall back to a plain rectangle */
 		cairo_rectangle(drw->cr, x, y, w, h);
+	} else if (w == h && r >= w / 2) {
+		cairo_arc(drw->cr, x + w / 2.0, y + h / 2.0, w / 2.0, 0, 2 * M_PI);
 	} else {
 		cairo_new_sub_path(drw->cr);
-		cairo_arc(drw->cr, x + w - r, y + r,     r, -90 * degrees,   0 * degrees);
-		cairo_arc(drw->cr, x + w - r, y + h - r, r,   0 * degrees,  90 * degrees);
-		cairo_arc(drw->cr, x + r,     y + h - r, r,  90 * degrees, 180 * degrees);
-		cairo_arc(drw->cr, x + r,     y + r,     r, 180 * degrees, 270 * degrees);
+		cairo_arc(drw->cr, x + w - r, y + r, r, -90 * degrees, 0 * degrees);
+		cairo_arc(drw->cr, x + w - r, y + h - r, r, 0 * degrees, 90 * degrees);
+		cairo_arc(drw->cr, x + r, y + h - r, r, 90 * degrees, 180 * degrees);
+		cairo_arc(drw->cr, x + r, y + r, r, 180 * degrees, 270 * degrees);
 		cairo_close_path(drw->cr);
 	}
 
@@ -276,18 +284,34 @@ drw_surf_destroy(Surf *s)
 }
 
 void
-drw_text(Drw *drw, char *text, int x, int y)
+drw_text(Drw *drw, char *text, int x, int y, int vert)
 {
 	PangoLayout *layout;
+	PangoLayoutIter *iter;
+	int w, h, baseline, target, dy;
 
 	drw_set_color(drw, drw->scm[ColFg]);
-
 	layout = pango_cairo_create_layout(drw->cr);
 	pango_layout_set_font_description(layout, drw->fnt->desc);
 	pango_layout_set_text(layout, text, -1);
+	pango_layout_get_pixel_size(layout, &w, &h);
 
-	cairo_move_to(drw->cr, x, y);
+	iter = pango_layout_get_iter(layout);
+	baseline = pango_layout_iter_get_baseline(iter) / PANGO_SCALE;
+	pango_layout_iter_free(iter);
+	target = y + drw->fnt->ascent;
+	dy = target - baseline;
+
+	cairo_save(drw->cr);
+	if (vert) {
+		cairo_translate(drw->cr, x + h, dy);
+		cairo_rotate(drw->cr, M_PI / 2.0);
+		cairo_move_to(drw->cr, 0, 0);
+	} else {
+		cairo_move_to(drw->cr, x, dy);
+	}
 	pango_cairo_show_layout(drw->cr, layout);
+	cairo_restore(drw->cr);
 
 	g_object_unref(layout);
 }
@@ -365,6 +389,12 @@ drw_text_getwidth(Fnt *fnt, char *text)
 	cairo_surface_destroy(tmp);
 
 	return w;
+}
+
+void
+drw_unclip(Drw *drw)
+{
+	cairo_restore(drw->cr);
 }
 
 unsigned long
