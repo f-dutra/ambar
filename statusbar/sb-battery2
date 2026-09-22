@@ -1,0 +1,33 @@
+#!/bin/sh
+
+dwm_battery () {
+    # Change BAT1 to whatever your battery is identified as. Typically BAT0 or BAT1
+    	CHARGE=$(cat /sys/class/power_supply/BAT0/capacity)
+    	STATUS=$(cat /sys/class/power_supply/BAT0/status)
+     if   [ "${CHARGE}" -lt 10 ];  then ICON="󱃍"
+     elif [ "${CHARGE}" -lt 20 ];  then ICON="󰁺"
+     elif [ "${CHARGE}" -lt 30 ];  then ICON="󰁻"
+     elif [ "${CHARGE}" -lt 40 ];  then ICON="󰁼"
+     elif [ "${CHARGE}" -lt 50 ];  then ICON="󰁽"
+     elif [ "${CHARGE}" -lt 60 ];  then ICON="󰁾"
+     elif [ "${CHARGE}" -lt 70 ];  then ICON="󰁿"
+     elif [ "${CHARGE}" -lt 80 ];  then ICON="󰂀"
+     elif [ "${CHARGE}" -lt 90 ];  then ICON="󰂁"
+     elif [ "${CHARGE}" -lt 99 ];  then ICON="󰂂"
+     elif [ "${CHARGE}" -lt 109 ]; then ICON="󰁹"
+     fi
+    	if [ "$STATUS" = "Charging" ]; then
+		printf "%s󱐋" "$ICON"
+    		#printf "%s󱐋 %s%%" "$ICON" "$CHARGE"
+    	elif [ "$STATUS" = "Not charging" ]; then
+		printf "%s!" "$ICON"
+    		#printf "%s! %s%%" "$ICON" "$CHARGE"
+    	elif [ "$STATUS" = "Unknown" ]; then
+		printf "%s?" "$ICON"
+    		#printf "%s? %s%%" "$ICON" "$CHARGE"
+	else
+		printf "%s" "$ICON"
+    		#printf "%s %s%%" "$ICON" "$CHARGE"
+	fi
+}
+dwm_battery

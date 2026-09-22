@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# The clickable help menu. Middle click to restart wm.
+
+# If dwm is running, use dwm's readme and restart.
+pidof dwm >/dev/null &&
+	restartwm() { pkill -HUP dwm ;} ||
+		restartwm() { i3 restart ;}
+
+case $BLOCK_BUTTON in
+	1) dmenu_run;;
+	3) notify-send "Open dmenu." ;;
+	6) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac; echo "Places"
